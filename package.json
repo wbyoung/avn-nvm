@@ -1,0 +1,35 @@
+{
+  "name": "avn-nvm",
+  "version": "0.1.0",
+  "description": "avn plugin for n",
+  "homepage": "https://github.com/wbyoung/avn-nvm",
+  "bugs": {
+    "url": "https://github.com/wbyoung/avn-nvm/issues"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report $(if [ \"$TRAVIS\" ]; then echo lcovonly; else echo html; fi) -- && if [ \"$TRAVIS\" ]; then cat ./coverage/lcov.info | ./node_modules/.bin/coveralls; fi"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/wbyoung/avn-nvm.git"
+  },
+  "keywords": [
+    "avn",
+    "node",
+    "n",
+    "version",
+    "switch",
+    "automatic",
+    "cd",
+    "change",
+    "directory"
+  ],
+  "author": "Whitney Young",
+  "license": "MIT",
+  "dependencies": {
+    "q": "~1.0.1",
+    "semver": "~2.2.1",
+    "concat-stream": "~1.4.5"
+  }
+}

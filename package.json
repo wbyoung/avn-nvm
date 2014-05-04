@@ -31,5 +31,12 @@
     "q": "~1.0.1",
     "semver": "~2.2.1",
     "concat-stream": "~1.4.5"
+  },
+  "devDependencies": {
+    "mocha": "~1.18.2",
+    "chai": "~1.9.1",
+    "should": "~3.3.1",
+    "istanbul": "~0.2.8",
+    "coveralls": "~2.10.0"
   }
 }

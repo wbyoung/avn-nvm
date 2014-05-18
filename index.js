@@ -22,7 +22,7 @@ var nvmCommand = function(command) {
     stderr = data;
   }));
 
-  cmd.on('close', function (code) {
+  cmd.on('close', function(code) {
     if (code === 0) { deferred.resolve({ stdout: stdout, stderr: stderr }); }
     else { deferred.reject('nvm exited with status: ' + code); }
   });

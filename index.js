@@ -49,7 +49,7 @@ var installedVersion = function(matching) {
     var version = null;
     versions.forEach(function(v) {
       if (semver.satisfies(v, matching)) {
-        if (!version || semver.gt(version, v)) {
+        if (!version || semver.gt(v, version)) {
           version = v;
         }
       }

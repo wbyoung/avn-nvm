@@ -30,16 +30,20 @@ var nvmCommand = function(command) {
   return deferred.promise;
 };
 
+var parseVersions = function(output) {
+  var string = output.stdout.toString()
+    .replace(/\x1b[^m]*m/g, '')
+    .replace(/^->/gm, '');
+  return string.split('\n')
+  .map(function(line) { return line.trim(); })
+  .filter(function(line) { return line && !line.match(/current|system|->/); });
+};
+
 var listVersions = function() {
   // find all of the versions of node installed by nvm.
   return q()
   .then(function() { return nvmCommand('list'); })
-  .then(function(result) {
-    var str = result.stdout.toString().replace(/\x1b[^m]*m|->/g, '');
-    return str.split('\n')
-    .map(function(line) { return line.trim(); })
-    .filter(function(line) { return line && !line.match(/current|system/); });
-  });
+  .then(parseVersions);
 };
 
 var installedVersion = function(matching) {
@@ -58,7 +62,7 @@ var installedVersion = function(matching) {
   });
 };
 
-exports.match = function(version) {
+var match = function(version) {
   return q()
   .then(function() { return installedVersion(version); })
   .then(function(use) {
@@ -66,4 +70,9 @@ exports.match = function(version) {
     var result = { version: use, command: command };
     return use ? result : q.reject('no version matching ' + version);
   });
+};
+
+module.exports = {
+  match: match,
+  _parseVersions: parseVersions
 };

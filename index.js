@@ -6,7 +6,7 @@ var semver = require('semver');
 var child_process = require('child_process');
 var concat = require('concat-stream');
 
-exports.name = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8')).name;
+var name = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8')).name;
 
 var nvmCommand = function(command) {
   var deferred = q.defer();
@@ -73,6 +73,7 @@ var match = function(version) {
 };
 
 module.exports = {
+  name: name,
   match: match,
   _parseVersions: parseVersions
 };

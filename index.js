@@ -35,7 +35,7 @@ var listVersions = function() {
   return q()
   .then(function() { return nvmCommand('list'); })
   .then(function(result) {
-    var str = result.stdout.toString().replace(/\x1b[^m]*m/g, '');
+    var str = result.stdout.toString().replace(/\x1b[^m]*m|->/g, '');
     return str.split('\n')
     .map(function(line) { return line.trim(); })
     .filter(function(line) { return line && !line.match(/current|->/); });

@@ -38,5 +38,8 @@
     "should": "~4.0.4",
     "istanbul": "~0.3.2",
     "coveralls": "~2.11.2"
+  },
+  "peerDependencies": {
+    "avn": "0.1.x"
   }
 }

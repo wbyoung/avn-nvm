@@ -29,13 +29,13 @@
   "license": "MIT",
   "dependencies": {
     "concat-stream": "^1.4.6",
-    "q": "~1.0.1",
+    "q": "~2.0.2",
     "semver": "^4.0.3"
   },
   "devDependencies": {
-    "mocha": "~1.21.4",
-    "chai": "~1.9.1",
-    "should": "~4.0.4",
+    "mocha": "~2.0.1",
+    "chai": "~1.10.0",
+    "should": "~4.3.0",
     "istanbul": "~0.3.2",
     "coveralls": "~2.11.2"
   },

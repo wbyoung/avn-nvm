@@ -1,7 +1,7 @@
 {
   "name": "avn-nvm",
   "version": "0.1.2",
-  "description": "avn plugin for n",
+  "description": "avn plugin for nvm",
   "homepage": "https://github.com/wbyoung/avn-nvm",
   "bugs": {
     "url": "https://github.com/wbyoung/avn-nvm/issues"

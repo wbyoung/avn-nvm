@@ -29,15 +29,15 @@
   "license": "MIT",
   "dependencies": {
     "concat-stream": "^1.4.6",
-    "q": "~2.0.2",
+    "q": "^2.0.2",
     "semver": "^4.0.3"
   },
   "devDependencies": {
-    "mocha": "~2.0.1",
-    "chai": "~1.10.0",
-    "should": "~4.3.0",
-    "istanbul": "~0.3.2",
-    "coveralls": "~2.11.2"
+    "mocha": "^2.0.1",
+    "chai": "^1.10.0",
+    "should": "^4.3.0",
+    "istanbul": "^0.3.2",
+    "coveralls": "^2.11.2"
   },
   "peerDependencies": {
     "avn": "0.1.x"

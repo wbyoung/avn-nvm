@@ -12,7 +12,7 @@ var nvmCommand = function(command) {
   var deferred = q.defer();
   var stdout, stderr;
   var cmd = child_process.spawn('bash',
-    ['-c', 'source ~/.nvm/nvm.sh; nvm ' + command]);
+    ['-c', 'source $NVM_DIR/nvm.sh; nvm ' + command]);
 
   cmd.stdout.pipe(concat(function(data) {
     stdout = data;

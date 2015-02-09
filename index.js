@@ -8,6 +8,8 @@ var concat = require('concat-stream');
 
 var name = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8')).name;
 
+var VERSION_REGEX = /(\w+)-(.+)/;
+
 var nvmCommand = function(command) {
   var deferred = q.defer();
   var stdout, stderr;
@@ -46,19 +48,43 @@ var listVersions = function() {
   .then(parseVersions);
 };
 
+// extract a name from a version (to support iojs)
+var versionName = function(version) {
+  var match = version.match(VERSION_REGEX);
+  return match ? match[1] : null;
+};
+
+// extract just the version number from a version
+var versionNumber = function(version) {
+  var match = version.match(VERSION_REGEX);
+  return match ? match[2] : version;
+};
+
+var findVersion = function(versions, matching) {
+  var highestMatch = null;
+
+  var mName = versionName(matching);
+  var mNumber = versionNumber(matching);
+
+  versions.forEach(function(v) {
+    var vName = versionName(v);
+    var vNumber = versionNumber(v);
+
+    if (vName === mName && semver.satisfies(vNumber, mNumber)) {
+      if (!highestMatch) { highestMatch = v; }
+      else if (semver.gt(vNumber, versionNumber(highestMatch))) {
+        highestMatch = v;
+      }
+    }
+  });
+  return highestMatch;
+};
+
 var installedVersion = function(matching) {
   return q()
   .then(function() { return listVersions(); })
   .then(function(versions) {
-    var version = null;
-    versions.forEach(function(v) {
-      if (semver.satisfies(v, matching)) {
-        if (!version || semver.gt(v, version)) {
-          version = v;
-        }
-      }
-    });
-    return version;
+    return findVersion(versions, matching);
   });
 };
 
@@ -75,5 +101,6 @@ var match = function(version) {
 module.exports = {
   name: name,
   match: match,
-  _parseVersions: parseVersions
+  _parseVersions: parseVersions,
+  _findVersion: findVersion
 };

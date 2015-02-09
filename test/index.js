@@ -33,4 +33,25 @@ describe('plugin', function() {
       'v0.11.13'
     ]);
   });
+
+  it('parses output that includes iojs', function() {
+    var output = {
+      stdout: new Buffer('    iojs-v1.1.0\n->     v0.10.36\n        v0.12.0\n')
+    };
+    expect(plugin._parseVersions(output)).to.eql([
+      'iojs-v1.1.0',
+      'v0.10.36',
+      'v0.12.0',
+    ]);
+  });
+
+  it('finds versions when iojs is installed', function() {
+    expect(plugin._findVersion(['iojs-v1.1.0', 'v0.12.0'], 'v0.12'))
+      .to.eql('v0.12.0');
+  });
+
+  it('finds iojs versions', function() {
+    expect(plugin._findVersion(['iojs-v1.1.0', 'v0.12.0'], 'iojs-v1.1'))
+      .to.eql('iojs-v1.1.0');
+  });
 });

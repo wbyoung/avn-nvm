@@ -1,17 +1,21 @@
-var q = require('q');
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
 var semver = require('semver');
 var child_process = require('child_process');
 var concat = require('concat-stream');
+var BPromise = require('bluebird');
 
 var name = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8')).name;
 
 var VERSION_REGEX = /(\w+)-(.+)/;
 
 var nvmCommand = function(command) {
-  var deferred = q.defer();
+  var resolve, reject, promise = new BPromise(function() {
+    resolve = arguments[0];
+    reject = arguments[1];
+  });
+
   var stdout, stderr;
   var cmd = child_process.spawn('bash',
     ['-c', 'source $NVM_DIR/nvm.sh; nvm ' + command]);
@@ -25,11 +29,11 @@ var nvmCommand = function(command) {
   }));
 
   cmd.on('close', function(code) {
-    if (code === 0) { deferred.resolve({ stdout: stdout, stderr: stderr }); }
-    else { deferred.reject('nvm exited with status: ' + code); }
+    if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
+    else { reject('nvm exited with status: ' + code); }
   });
 
-  return deferred.promise;
+  return promise;
 };
 
 var parseVersions = function(output) {
@@ -43,7 +47,7 @@ var parseVersions = function(output) {
 
 var listVersions = function() {
   // find all of the versions of node installed by nvm.
-  return q()
+  return BPromise.resolve()
   .then(function() { return nvmCommand('list'); })
   .then(parseVersions);
 };
@@ -81,7 +85,7 @@ var findVersion = function(versions, matching) {
 };
 
 var installedVersion = function(matching) {
-  return q()
+  return BPromise.resolve()
   .then(function() { return listVersions(); })
   .then(function(versions) {
     return findVersion(versions, matching);
@@ -89,12 +93,12 @@ var installedVersion = function(matching) {
 };
 
 var match = function(version) {
-  return q()
+  return BPromise.resolve()
   .then(function() { return installedVersion(version); })
   .then(function(use) {
     var command = util.format('nvm use %s > /dev/null;', use);
     var result = { version: use, command: command };
-    return use ? result : q.reject('no version matching ' + version);
+    return use ? result : BPromise.reject('no version matching ' + version);
   });
 };
 

@@ -30,7 +30,10 @@ var nvmCommand = function(command) {
 
   cmd.on('close', function(code) {
     if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
-    else { reject('nvm exited with status: ' + code); }
+    else {
+      reject(util.format('nvm exited with status: %d\n%s',
+        code, stdout.toString().trim() + stderr.toString().trim()));
+    }
   });
 
   return promise;

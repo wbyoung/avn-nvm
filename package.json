@@ -30,7 +30,7 @@
   "dependencies": {
     "bluebird": "^2.9.15",
     "concat-stream": "^1.4.6",
-    "semver": "^4.0.3"
+    "semver": "^4.3.6"
   },
   "devDependencies": {
     "chai": "^2.2.0",

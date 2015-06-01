@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "test": "istanbul cover node_modules/.bin/_mocha --report html --",
-    "test-travis": "istanbul cover node_modules/.bin/_mocha --report lcovonly --",
+    "test-travis": "istanbul cover node_modules/.bin/_mocha --report lcovonly --"
   },
   "repository": {
     "type": "git",

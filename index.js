@@ -1,44 +1,54 @@
-var fs = require('fs');
-var path = require('path');
+'use strict';
+
 var util = require('util');
 var semver = require('semver');
-var child_process = require('child_process');
+var child = require('child_process');
 var concat = require('concat-stream');
-var BPromise = require('bluebird');
-
-var name = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8')).name;
+var Promise = require('bluebird');
+var name = require('./package.json').name;
 
 var VERSION_REGEX = /(\w+)-(.+)/;
 
+/**
+ * Run an nvm command.
+ *
+ * @private
+ * @function
+ * @param {String} command
+ * @return {Promise}
+ */
 var nvmCommand = function(command) {
-  var resolve, reject, promise = new BPromise(function() {
-    resolve = arguments[0];
-    reject = arguments[1];
+  return new Promise(function(resolve, reject) {
+    var stdout, stderr;
+    var cmd = child.spawn('bash',
+      ['-c', 'source $NVM_DIR/nvm.sh; nvm ' + command]);
+
+    cmd.stdout.pipe(concat(function(data) {
+      stdout = data;
+    }));
+
+    cmd.stderr.pipe(concat(function(data) {
+      stderr = data;
+    }));
+
+    cmd.on('close', function(code) {
+      if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
+      else {
+        reject(new Error(util.format('nvm exited with status: %d\n%s',
+          code, stdout.toString().trim() + stderr.toString().trim())));
+      }
+    });
   });
-
-  var stdout, stderr;
-  var cmd = child_process.spawn('bash',
-    ['-c', 'source $NVM_DIR/nvm.sh; nvm ' + command]);
-
-  cmd.stdout.pipe(concat(function(data) {
-    stdout = data;
-  }));
-
-  cmd.stderr.pipe(concat(function(data) {
-    stderr = data;
-  }));
-
-  cmd.on('close', function(code) {
-    if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
-    else {
-      reject(util.format('nvm exited with status: %d\n%s',
-        code, stdout.toString().trim() + stderr.toString().trim()));
-    }
-  });
-
-  return promise;
 };
 
+/**
+ * Prase versions
+ *
+ * @private
+ * @function
+ * @param {String} output
+ * @return {Array.<String>}
+ */
 var parseVersions = function(output) {
   var string = output.stdout.toString()
     .replace(/\x1b[^m]*m/g, '')
@@ -48,25 +58,52 @@ var parseVersions = function(output) {
   .filter(function(line) { return line && !line.match(/current|system|->/); });
 };
 
+/**
+ * List versions.
+ *
+ * @private
+ * @function
+ * @return {Promise}
+ */
 var listVersions = function() {
   // find all of the versions of node installed by nvm.
-  return BPromise.resolve()
+  return Promise.resolve()
   .then(function() { return nvmCommand('list'); })
   .then(parseVersions);
 };
 
-// extract a name from a version (to support iojs)
+/**
+ * Extract a name from a version (to support iojs)
+ *
+ * @private
+ * @function
+ * @return {Promise}
+ */
 var versionName = function(version) {
   var match = version.match(VERSION_REGEX);
   return match ? match[1] : null;
 };
 
-// extract just the version number from a version
+/**
+ * Extract just the version number from a version.
+ *
+ * @private
+ * @function
+ * @param {String} version
+ * @return {String}
+ */
 var versionNumber = function(version) {
   var match = version.match(VERSION_REGEX);
   return match ? match[2] : version;
 };
 
+/**
+ * Find a version.
+ *
+ * @param {Array.<String>} versions
+ * @param {String} matching
+ * @return {String}
+ */
 var findVersion = function(versions, matching) {
   var highestMatch = null;
 
@@ -87,21 +124,34 @@ var findVersion = function(versions, matching) {
   return highestMatch;
 };
 
+/**
+ * Get installed version matching a given version.
+ *
+ * @param {String} matching
+ * @return {Promise}
+ */
 var installedVersion = function(matching) {
-  return BPromise.resolve()
+  return Promise.resolve()
   .then(function() { return listVersions(); })
   .then(function(versions) {
     return findVersion(versions, matching);
   });
 };
 
+/**
+ * Match a specific version.
+ *
+ * @param {String} version
+ * @return {Promise}
+ */
 var match = function(version) {
-  return BPromise.resolve()
+  return Promise.resolve()
   .then(function() { return installedVersion(version); })
   .then(function(use) {
     var command = util.format('nvm use %s > /dev/null;', use);
     var result = { version: use, command: command };
-    return use ? result : BPromise.reject('no version matching ' + version);
+    return use ? result :
+      Promise.reject(new Error('no version matching ' + version));
   });
 };
 
@@ -109,5 +159,5 @@ module.exports = {
   name: name,
   match: match,
   _parseVersions: parseVersions,
-  _findVersion: findVersion
+  _findVersion: findVersion,
 };

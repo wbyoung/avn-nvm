@@ -1,17 +1,19 @@
+'use strict';
+
 var expect = require('chai').expect;
 var plugin = require('..');
 var sinon = require('sinon');
-var child_process = require('child_process');
+var child = require('child_process');
 
 describe('plugin', function() {
 
   beforeEach(function() {
-    var spawn = child_process.spawn;
-    sinon.stub(child_process, 'spawn', function(cmd, args) {
+    var spawn = child.spawn;
+    sinon.stub(child, 'spawn', function(/*cmd, args*/) {
       return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13']);
     });
   });
-  afterEach(function() { child_process.spawn.restore(); });
+  afterEach(function() { child.spawn.restore(); });
 
   it('matches exact version', function(done) {
     plugin.match('0.11.13').then(function(result) {
@@ -46,14 +48,14 @@ describe('plugin', function() {
   it('rejects versions not installed', function(done) {
     plugin.match('0.9').then(
       function() { throw new Error('Plugin should have rejected invalid version.'); },
-      function(e) { expect(e).to.eql('no version matching 0.9'); })
+      function(e) { expect(e).to.match(/no version matching 0\.9/); })
     .done(done);
   });
 
   it('rejects when command fails', function(done) {
-    child_process.spawn.restore();
-    var spawn = child_process.spawn;
-    sinon.stub(child_process, 'spawn', function(cmd, args) {
+    child.spawn.restore();
+    var spawn = child.spawn;
+    sinon.stub(child, 'spawn', function(/*cmd, args*/) {
       return spawn('ls', ['/nowhere']); // intentional command failure
     });
 

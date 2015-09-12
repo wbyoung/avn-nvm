@@ -20,7 +20,7 @@ var VERSION_REGEX = /(\w+)-(.+)/;
 var nvmCommand = function(command) {
   return new Promise(function(resolve, reject) {
     var stdout, stderr;
-    var cmd = child.spawn('bash',
+    var cmd = child.spawn(process.env.SHELL,
       ['-c', 'source $NVM_DIR/nvm.sh; nvm ' + command]);
 
     cmd.stdout.pipe(concat(function(data) {

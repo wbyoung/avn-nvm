@@ -4,6 +4,10 @@
 
 [`nvm`][nvm] plugin for [`avn`][avn].
 
+## Issues
+
+This plugin is maintained by the `avn` team. Please [report issues directly to `avn`][issues].
+
 ## License
 
 This project is distributed under the MIT license.
@@ -24,3 +28,4 @@ This project is distributed under the MIT license.
 
 [nvm]: https://github.com/creationix/nvm
 [avn]: https://github.com/wbyoung/avn
+[issues]: https://github.com/wbyoung/avn/issues

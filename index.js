@@ -145,6 +145,13 @@ var installedVersion = function(matching) {
  * @return {Promise}
  */
 var match = function(version) {
+  var currentVersion = versionNumber(process.version);
+  if (semver.satisfies(currentVersion, version)) {
+    return Promise.resolve({
+      version: currentVersion,
+      command: util.format('echo "Already using Node %s"', currentVersion)
+    });
+  }
   return Promise.resolve()
   .then(function() { return installedVersion(version); })
   .then(function(use) {

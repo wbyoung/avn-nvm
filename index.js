@@ -20,8 +20,8 @@ var VERSION_REGEX = /(\w+)-(.+)/;
 var nvmCommand = function(command) {
   return new Promise(function(resolve, reject) {
     var stdout, stderr;
-    var cmd = child.spawn(process.env.SHELL,
-      ['-c', 'source $NVM_DIR/nvm.sh; nvm ' + command]);
+    var nvmLoad = 'source $(if [ `type -p brew` ]; then echo $(brew --prefix nvm); else echo $NVM_DIR; fi)/nvm.sh;';
+    var cmd = child.spawn(process.env.SHELL, ['-c', nvmLoad + ' nvm ' + command]);
 
     cmd.stdout.pipe(concat(function(data) {
       stdout = data;

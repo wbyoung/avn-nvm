@@ -125,6 +125,26 @@ var findVersion = function(versions, matching) {
 };
 
 /**
+* Parse the results of the nvm version call.
+*
+* @param {Promise} matching
+*/
+var parseMatching = function(matching) {
+  return matching.stdout.toString().trim();
+};
+/**
+* Use nvm to resolve a version string (which could be a version number or an
+alias) to an installed version number (or N/A).
+*
+* @param {String} matching
+*/
+var resolveVersion = function(matching) {
+  return Promise.resolve()
+    .then(function () { return nvmCommand('version "' + matching + '"'); })
+    .then(parseMatching);
+};
+
+/**
  * Get installed version matching a given version.
  *
  * @param {String} matching
@@ -132,9 +152,15 @@ var findVersion = function(versions, matching) {
  */
 var installedVersion = function(matching) {
   return Promise.resolve()
-  .then(function() { return listVersions(); })
-  .then(function(versions) {
-    return findVersion(versions, matching);
+  .then(function () {
+    return Promise.all([
+      resolveVersion(matching),
+      listVersions()
+    ]);
+  })
+  .spread(function (parsedVersion, versions) {
+    var parsedMatching = parsedVersion !== 'N/A' ? parsedVersion : matching;
+    return findVersion(versions, parsedMatching);
   });
 };
 

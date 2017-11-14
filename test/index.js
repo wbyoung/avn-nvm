@@ -9,8 +9,24 @@ describe('plugin', function() {
 
   beforeEach(function() {
     var spawn = child.spawn;
-    sinon.stub(child, 'spawn', function(/*cmd, args*/) {
-      return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13']);
+    sinon.stub(child, 'spawn', function(cmd, args) {
+      var versionMatch = args[1].match(/source \$NVM_DIR\/nvm\.sh; nvm version "(v*\d+[\.\d]*)"/)
+      if (args[1] === 'source $NVM_DIR/nvm.sh; nvm version "lts/boron"') {
+        // Mock return for an aliased version
+        return spawn('echo', ['v6.12.0'])
+      } else if (versionMatch) {
+        // Mock return for a normal version numver
+        var version = versionMatch[2];
+        version = 'v' + version.replace('v', '');
+        return spawn('echo', [version]);
+      } else if (args[1] === 'source $NVM_DIR/nvm.sh; nvm list') {
+        // Mock the version list command
+        return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13\nv6.12.0']);
+      } else {
+        // Assume all other commands are nvm version "<uninstalled_version>"
+        return spawn('echo', ['N/A'])
+      }
+
     });
   });
   afterEach(function() { child.spawn.restore(); });
@@ -117,4 +133,13 @@ describe('plugin', function() {
     expect(plugin._findVersion(['iojs-v1.1.0', 'v0.12.0'], 'iojs-v1.1'))
       .to.eql('iojs-v1.1.0');
   });
+
+  it('finds aliased versions', function (done) {
+    plugin.match('lts/boron').then(function(result) {
+      expect(result).to.eql({
+        version: 'v6.12.0',
+        command: 'nvm use v6.12.0 > /dev/null;'
+      })
+    }).done(done)
+  })
 });

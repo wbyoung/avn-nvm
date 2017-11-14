@@ -10,10 +10,10 @@ describe('plugin', function() {
   beforeEach(function() {
     var spawn = child.spawn;
     sinon.stub(child, 'spawn', function(cmd, args) {
-      var versionMatch = args[1].match(/source \$NVM_DIR\/nvm\.sh; nvm version "(v*\d+[\.\d]*)"/)
+      var versionMatch = args[1].match(/source \$NVM_DIR\/nvm\.sh; nvm version "(v*\d+[\.\d]*)"/);
       if (args[1] === 'source $NVM_DIR/nvm.sh; nvm version "lts/boron"') {
         // Mock return for an aliased version
-        return spawn('echo', ['v6.12.0'])
+        return spawn('echo', ['v6.12.0']);
       } else if (versionMatch) {
         // Mock return for a normal version numver
         var version = versionMatch[1];
@@ -24,7 +24,7 @@ describe('plugin', function() {
         return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13\nv6.12.0']);
       } else {
         // Assume all other commands are nvm version "<uninstalled_version>"
-        return spawn('echo', ['N/A'])
+        return spawn('echo', ['N/A']);
       }
 
     });
@@ -139,7 +139,7 @@ describe('plugin', function() {
       expect(result).to.eql({
         version: 'v6.12.0',
         command: 'nvm use v6.12.0 > /dev/null;'
-      })
-    }).done(done)
-  })
+      });
+    }).done(done);
+  });
 });

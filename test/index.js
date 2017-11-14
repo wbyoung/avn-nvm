@@ -16,7 +16,7 @@ describe('plugin', function() {
         return spawn('echo', ['v6.12.0'])
       } else if (versionMatch) {
         // Mock return for a normal version numver
-        var version = versionMatch[2];
+        var version = versionMatch[1];
         version = 'v' + version.replace('v', '');
         return spawn('echo', [version]);
       } else if (args[1] === 'source $NVM_DIR/nvm.sh; nvm list') {

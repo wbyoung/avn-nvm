@@ -11,7 +11,7 @@ describe('plugin', function() {
     var spawn = child.spawn;
 
     var getLTSVersion = 'source $NVM_DIR/nvm.sh; nvm version "lts/boron"';
-    var getSystemVersion = 'source $NVM_DIR/nvm.sh; nvm deactivate > /dev/null && node --version;';
+    var getSystemVersion = 'source $NVM_DIR/nvm.sh; nvm use system > /dev/null && node --version;';
     var listNvmVersions = 'source $NVM_DIR/nvm.sh; nvm list';
 
     sinon.stub(child, 'spawn', function(cmd, args) {
@@ -154,7 +154,7 @@ describe('plugin', function() {
   it('finds system version', function (done) {
     plugin.match('system').then(function(result) {
       expect(result).to.eql({
-        version: 'system version of node: v0.12.7',
+        version: 'system: v0.12.7',
         command: 'nvm use system > /dev/null;'
       });
     }).done(done);

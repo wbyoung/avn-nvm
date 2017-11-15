@@ -16,7 +16,7 @@ var getSystemNode = function() {
   return new Promise(function(resolve, reject) {
     var stdout, stderr;
     var cmd = child.spawn(process.env.SHELL,
-      ['-c', 'source $NVM_DIR/nvm.sh; nvm deactivate > /dev/null && node --version;']);
+      ['-c', 'source $NVM_DIR/nvm.sh; nvm use system > /dev/null && node --version;']);
 
     cmd.stdout.pipe(concat(function(data) {
       stdout = data;

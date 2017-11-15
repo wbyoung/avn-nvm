@@ -213,7 +213,7 @@ var match = function(version) {
       useVersion;
   })
   .then(function(useVersion) {
-    var use = (useVersion && useVersion.startsWith('system')) ?
+    var use = (useVersion && useVersion.indexOf('system') === 0) ?
       'system' : useVersion;
     var command = util.format('nvm use %s > /dev/null;', use);
     var result = { version: useVersion, command: command };

@@ -9,11 +9,17 @@ describe('plugin', function() {
 
   beforeEach(function() {
     var spawn = child.spawn;
+
+    var getLTSVersion = 'source $NVM_DIR/nvm.sh; nvm version "lts/boron"';
+    var getSystemVersion = 'source $NVM_DIR/nvm.sh; nvm version "system"';
+
     sinon.stub(child, 'spawn', function(cmd, args) {
       var versionMatch = args[1].match(/source \$NVM_DIR\/nvm\.sh; nvm version "(v*\d+[\.\d]*)"/);
-      if (args[1] === 'source $NVM_DIR/nvm.sh; nvm version "lts/boron"') {
+      if (args[1] === getLTSVersion) {
         // Mock return for an aliased version
         return spawn('echo', ['v6.12.0']);
+      } else if (args[1] === getSystemVersion) {
+        return spawn('echo', ['system']);
       } else if (versionMatch) {
         // Mock return for a normal version numver
         var version = versionMatch[1];
@@ -139,6 +145,15 @@ describe('plugin', function() {
       expect(result).to.eql({
         version: 'v6.12.0',
         command: 'nvm use v6.12.0 > /dev/null;'
+      });
+    }).done(done);
+  });
+
+  it('finds system version', function (done) {
+    plugin.match('system').then(function(result) {
+      expect(result).to.eql({
+        version: 'v0.12.7',
+        command: 'nvm use system > /dev/null'
       });
     }).done(done);
   });

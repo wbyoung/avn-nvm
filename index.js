@@ -208,7 +208,7 @@ var match = function(version) {
       getSystemNode()
         .then(parseMatching)
         .then(function(use) {
-          return 'system version of node: ' + use;
+          return 'system: ' + use;
         }) :
       useVersion;
   })

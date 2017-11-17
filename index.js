@@ -10,7 +10,7 @@ var name = require('./package.json').name;
 var VERSION_REGEX = /(\w+)-(.+)/;
 
 /**
-* Get the system version of Node, if present. Otherwise, return N/A
+* Get the system version of Node, if present. Otherwise, return a rejected Promise.
 */
 var getSystemNode = function() {
   return new Promise(function(resolve, reject) {

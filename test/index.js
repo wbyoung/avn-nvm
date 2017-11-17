@@ -11,7 +11,7 @@ describe('plugin', function() {
     var spawn = child.spawn;
 
     var getLTSVersion = 'source $NVM_DIR/nvm.sh; nvm version "lts/boron"';
-    var getSystemVersion = 'source $NVM_DIR/nvm.sh; nvm use system > /dev/null && node --version;';
+    var getSystemVersion = 'source $NVM_DIR/nvm.sh; nvm run --silent system --version;';
     var listNvmVersions = 'source $NVM_DIR/nvm.sh; nvm list';
 
     sinon.stub(child, 'spawn', function(cmd, args) {

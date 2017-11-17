@@ -61,7 +61,7 @@ var nvmCommand = function(command) {
       if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
       else {
         reject(new Error(util.format('nvm exited with status: %d\n%s',
-          code, stdout.toString().trim() + stderr.toString().trim())));
+          code, String(stdout).trim() + String(stderr).trim())));
       }
     });
   });
@@ -76,7 +76,7 @@ var nvmCommand = function(command) {
  * @return {Array.<String>}
  */
 var parseVersions = function(output) {
-  var string = output.stdout.toString()
+  var string = String(output.stdout)
     .replace(/\x1b[^m]*m/g, '')
     .replace(/^->/gm, '');
   return string.split('\n')
@@ -160,7 +160,7 @@ var findVersion = function(versions, matching) {
 * @param {Promise} matching
 */
 var parseMatching = function(matching) {
-  return matching.stdout.toString().trim();
+  return String(matching.stdout).trim();
 };
 /**
 * Use nvm to resolve a version string (which could be a version number or an

@@ -10,7 +10,8 @@ var name = require('./package.json').name;
 var VERSION_REGEX = /(\w+)-(.+)/;
 
 /**
-* Get the system version of Node, if present. Otherwise, return a rejected Promise.
+* Get the system version of Node, if present.
+* Otherwise, return a rejected Promise.
 */
 var getSystemNode = function() {
   return new Promise(function(resolve, reject) {
@@ -170,7 +171,7 @@ alias) to an installed version number (or N/A).
 */
 var resolveVersion = function(matching) {
   return Promise.resolve()
-    .then(function () { return nvmCommand('version "' + matching + '"'); })
+    .then(function() { return nvmCommand('version "' + matching + '"'); })
     .then(parseMatching);
 };
 
@@ -182,13 +183,13 @@ var resolveVersion = function(matching) {
  */
 var installedVersion = function(matching) {
   return Promise.resolve()
-  .then(function () {
+  .then(function() {
     return Promise.all([
       resolveVersion(matching),
-      listVersions()
+      listVersions(),
     ]);
   })
-  .spread(function (parsedVersion, versions) {
+  .spread(function(parsedVersion, versions) {
     var parsedMatching = parsedVersion !== 'N/A' ? parsedVersion : matching;
     return findVersion(versions, parsedMatching);
   });
@@ -203,7 +204,7 @@ var installedVersion = function(matching) {
 var match = function(version) {
   return Promise.resolve()
   .then(function() { return installedVersion(version); })
-  .then(function (useVersion) {
+  .then(function(useVersion) {
     return useVersion === 'system' ?
       getSystemNode()
         .then(parseMatching)

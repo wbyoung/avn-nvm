@@ -8,6 +8,7 @@ var child = require('child_process');
 describe('plugin', function() {
 
   var getLTSVersion = 'source $NVM_DIR/nvm.sh; nvm version "lts/boron"';
+  var getSystemLikeAlias = 'source $NVM_DIR/nvm.sh; nvm version "system-alias"';
   var getSystemVersion = 'source $NVM_DIR/nvm.sh; nvm run --silent system --version;';
   var listNvmVersions = 'source $NVM_DIR/nvm.sh; nvm list';
 
@@ -20,6 +21,8 @@ describe('plugin', function() {
       if (args[1] === getLTSVersion) {
         // Mock return for an aliased version
         return spawn('echo', ['v6.12.0']);
+      } else if (args[1] === getSystemLikeAlias) {
+        return spawn('echo', ['v6.9.5']);
       } else if (args[1] === getSystemVersion) {
         return spawn('echo', ['v0.12.7']);
       } else if (versionMatch) {
@@ -29,7 +32,7 @@ describe('plugin', function() {
         return spawn('echo', [version]);
       } else if (args[1] === listNvmVersions) {
         // Mock the version list command
-        return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13\nv6.12.0']);
+        return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13\nv6.9.5\nv6.12.0']);
       } else {
         // Assume all other commands are nvm version "<uninstalled_version>"
         return spawn('echo', ['N/A']);
@@ -156,6 +159,15 @@ describe('plugin', function() {
       expect(result).to.eql({
         version: 'system: v0.12.7',
         command: 'nvm use system > /dev/null;'
+      });
+    }).done(done);
+  });
+
+  it('differentiates between aliases containing "system" and the system node', function (done) {
+    plugin.match('system-alias').then(function(result) {
+      expect(result).to.eql({
+        version: 'v6.9.5',
+        command: 'nvm use v6.9.5 > /dev/null;'
       });
     }).done(done);
   });

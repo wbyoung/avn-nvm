@@ -9,8 +9,14 @@ describe('plugin', function() {
 
   beforeEach(function() {
     var spawn = child.spawn;
-    sinon.stub(child, 'spawn', function(/*cmd, args*/) {
-      return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13']);
+    sinon.stub(child, 'spawn', function(cmd, args) {
+      if (/nvm current/.test(args[1])) {
+        return spawn('echo', ['v0.7.12']);
+      }
+      if (/nvm list/.test(args[1])) {
+        return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13']);
+      }
+      return spawn('echo', ['']);
     });
   });
   afterEach(function() { child.spawn.restore(); });
@@ -25,7 +31,7 @@ describe('plugin', function() {
     .done(done);
   });
 
-  it('matches with semver syntax', function(done) {
+  it('matches with server syntax', function(done) {
     plugin.match('>=0.10 < 0.10.29').then(function(result) {
       expect(result).to.eql({
         version: 'v0.10.28',
@@ -43,6 +49,20 @@ describe('plugin', function() {
       });
     })
     .done(done);
+  });
+
+  it('rejects versions already have active matching', function(done) {
+    plugin.match('0.7').then(
+      function() { throw new Error('Plugin should have rejected already active version.'); },
+      function(e) { expect(e).to.match(/already using matching version/); })
+      .done(done);
+  });
+
+  it('rejects versions already have active matching', function(done) {
+    plugin.match('0.7.12').then(
+      function() { throw new Error('Plugin should have rejected already active version.'); },
+      function(e) { expect(e).to.match(/already using matching version/); })
+      .done(done);
   });
 
   it('rejects versions not installed', function(done) {

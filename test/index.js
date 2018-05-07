@@ -51,14 +51,14 @@ describe('plugin', function() {
     .done(done);
   });
 
-  it('rejects versions already have active matching', function(done) {
+  it('rejects if server already using matching node version', function(done) {
     plugin.match('0.7').then(
       function() { throw new Error('Plugin should have rejected already active version.'); },
       function(e) { expect(e).to.match(/already using matching version/); })
       .done(done);
   });
 
-  it('rejects versions already have active matching', function(done) {
+  it('rejects if server already using matching node version', function(done) {
     plugin.match('0.7.12').then(
       function() { throw new Error('Plugin should have rejected already active version.'); },
       function(e) { expect(e).to.match(/already using matching version/); })

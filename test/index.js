@@ -10,7 +10,7 @@ describe('plugin', function() {
   beforeEach(function() {
     var spawn = child.spawn;
     sinon.stub(child, 'spawn', function(cmd, args) {
-      if (/nvm current/.test(args[1])) {
+      if (/node -v/.test(args[1])) {
         return spawn('echo', ['v0.7.12']);
       }
       if (/nvm list/.test(args[1])) {
@@ -81,7 +81,7 @@ describe('plugin', function() {
 
     plugin.match('0.9').then(
       function() { throw new Error('Plugin should have rejected bad command.'); },
-      function(e) { expect(e).to.match(/nvm exited with status: \d+/); })
+      function(e) { expect(e).to.match(/(node -v|nvm) exited with status: \d+/); })
     .done(done);
   });
 

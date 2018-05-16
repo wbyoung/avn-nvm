@@ -42,6 +42,37 @@ var nvmCommand = function(command) {
 };
 
 /**
+ * Run an node version.
+ *
+ * @private
+ * @function
+ * @return {Promise}
+ */
+var nodeVersion = function() {
+  return new Promise(function(resolve, reject) {
+    var stdout, stderr;
+    var cmd = child.spawn(process.env.SHELL,
+      ['-c', 'node -v']);
+
+    cmd.stdout.pipe(concat(function(data) {
+      stdout = data;
+    }));
+
+    cmd.stderr.pipe(concat(function(data) {
+      stderr = data;
+    }));
+
+    cmd.on('close', function(code) {
+      if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
+      else {
+        reject(new Error(util.format('node -v exited with status: %d\n%s',
+          code, stdout.toString().trim() + stderr.toString().trim())));
+      }
+    });
+  });
+};
+
+/**
  * Prase versions
  *
  * @private
@@ -82,7 +113,7 @@ var listVersions = function() {
 var currentVersion = function() {
   // find all of the versions of node installed by nvm.
   return Promise.resolve()
-    .then(function() { return nvmCommand('current'); })
+    .then(function() { return nodeVersion(); })
     .then(function(output) {
       return (output && output.stdout && output.stdout.toString()) || '';
     });

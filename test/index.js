@@ -58,7 +58,7 @@ describe('plugin', function() {
       .done(done);
   });
 
-  it('rejects if server already using matching node version', function(done) {
+  it('rejects if server already using matching node exact version', function(done) {
     plugin.match('0.7.12').then(
       function() { throw new Error('Plugin should have rejected already active version.'); },
       function(e) { expect(e).to.match(/already using matching version/); })
@@ -72,17 +72,36 @@ describe('plugin', function() {
     .done(done);
   });
 
-  it('rejects when command fails', function(done) {
+  it('rejects when node -v command fails', function(done) {
     child.spawn.restore();
     var spawn = child.spawn;
-    sinon.stub(child, 'spawn', function(/*cmd, args*/) {
+    sinon.stub(child, 'spawn', function(cmd, args) {
+      if (/nvm list/.test(args[1])) {
+        return spawn('echo', ['v0.7.12\n0.10.26\nv0.10.28\nv0.10.29\nv0.10.101\nv0.11.13']);
+      }
       return spawn('ls', ['/nowhere']); // intentional command failure
     });
 
     plugin.match('0.9').then(
       function() { throw new Error('Plugin should have rejected bad command.'); },
-      function(e) { expect(e).to.match(/(node -v|nvm) exited with status: \d+/); })
+      function(e) { expect(e).to.match(/node -v exited with status: \d+/); })
     .done(done);
+  });
+
+  it('rejects when nvmCommand fails', function(done) {
+    child.spawn.restore();
+    var spawn = child.spawn;
+    sinon.stub(child, 'spawn', function(cmd, args) {
+      if (/node -v/.test(args[1])) {
+        return spawn('echo', ['v0.7.12']);
+      }
+      return spawn('ls', ['/nowhere']); // intentional command failure
+    });
+
+    plugin.match('0.9').then(
+      function() { throw new Error('Plugin should have rejected bad command.'); },
+      function(e) { expect(e).to.match(/nvm exited with status: \d+/); })
+      .done(done);
   });
 
   it('parses nvm@dc53a37 output', function() {

@@ -42,6 +42,37 @@ var nvmCommand = function(command) {
 };
 
 /**
+ * Run an node version.
+ *
+ * @private
+ * @function
+ * @return {Promise}
+ */
+var nodeVersion = function() {
+  return new Promise(function(resolve, reject) {
+    var stdout, stderr;
+    var cmd = child.spawn(process.env.SHELL,
+      ['-c', 'node -v']);
+
+    cmd.stdout.pipe(concat(function(data) {
+      stdout = data;
+    }));
+
+    cmd.stderr.pipe(concat(function(data) {
+      stderr = data;
+    }));
+
+    cmd.on('close', function(code) {
+      if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
+      else {
+        reject(new Error(util.format('node -v exited with status: %d\n%s',
+          code, stdout.toString().trim() + stderr.toString().trim())));
+      }
+    });
+  });
+};
+
+/**
  * Prase versions
  *
  * @private
@@ -70,6 +101,22 @@ var listVersions = function() {
   return Promise.resolve()
   .then(function() { return nvmCommand('list'); })
   .then(parseVersions);
+};
+
+/**
+ * Get current versions.
+ *
+ * @private
+ * @function
+ * @return {Promise}
+ */
+var currentVersion = function() {
+  // find all of the versions of node installed by nvm.
+  return Promise.resolve()
+    .then(function() { return nodeVersion(); })
+    .then(function(output) {
+      return (output && output.stdout && output.stdout.toString()) || '';
+    });
 };
 
 /**
@@ -139,6 +186,20 @@ var installedVersion = function(matching) {
 };
 
 /**
+ * Check if active version matches a given version.
+ *
+ * @param {String} matching
+ * @returns {Promise}
+ */
+var activeVersion = function(matching) {
+  return Promise.resolve()
+    .then(function() { return currentVersion(); })
+    .then(function(version) {
+      return findVersion([version], matching);
+    });
+};
+
+/**
  * Match a specific version.
  *
  * @param {String} version
@@ -146,13 +207,18 @@ var installedVersion = function(matching) {
  */
 var match = function(version) {
   return Promise.resolve()
-  .then(function() { return installedVersion(version); })
-  .then(function(use) {
-    var command = util.format('nvm use %s > /dev/null;', use);
-    var result = { version: use, command: command };
-    return use ? result :
-      Promise.reject(new Error('no version matching ' + version));
-  });
+    .then(function() { return activeVersion(version); })
+    .then(function(isActiveVersion) {
+      return !isActiveVersion ? true :
+        Promise.reject(new Error('already using matching version'));
+    })
+    .then(function() { return installedVersion(version); })
+    .then(function(use) {
+      var command = util.format('nvm use %s > /dev/null;', use);
+      var result = { version: use, command: command };
+      return use ? result :
+        Promise.reject(new Error('no version matching ' + version));
+    });
 };
 
 module.exports = {

@@ -10,6 +10,33 @@ var name = require('./package.json').name;
 var VERSION_REGEX = /(\w+)-(.+)/;
 
 /**
+* Get the system version of Node, if present.
+* Otherwise, return a rejected Promise.
+*/
+var getSystemNode = function() {
+  return new Promise(function(resolve, reject) {
+    var stdout, stderr;
+    var cmd = child.spawn(process.env.SHELL,
+      ['-c', 'source $NVM_DIR/nvm.sh; nvm run --silent system --version;']);
+
+    cmd.stdout.pipe(concat(function(data) {
+      stdout = data;
+    }));
+
+    cmd.stderr.pipe(concat(function(data) {
+      stderr = data;
+    }));
+
+    cmd.on('close', function(code) {
+      if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
+      else {
+        reject(new Error('Could not find system version of node.'));
+      }
+    });
+  });
+};
+
+/**
  * Run an nvm command.
  *
  * @private
@@ -35,7 +62,7 @@ var nvmCommand = function(command) {
       if (code === 0) { resolve({ stdout: stdout, stderr: stderr }); }
       else {
         reject(new Error(util.format('nvm exited with status: %d\n%s',
-          code, stdout.toString().trim() + stderr.toString().trim())));
+          code, String(stdout).trim() + String(stderr).trim())));
       }
     });
   });
@@ -50,7 +77,7 @@ var nvmCommand = function(command) {
  * @return {Array.<String>}
  */
 var parseVersions = function(output) {
-  var string = output.stdout.toString()
+  var string = String(output.stdout)
     .replace(/\x1b[^m]*m/g, '')
     .replace(/^->/gm, '');
   return string.split('\n')
@@ -105,6 +132,10 @@ var versionNumber = function(version) {
  * @return {String}
  */
 var findVersion = function(versions, matching) {
+  if (matching === 'system') {
+    return matching;
+  }
+
   var highestMatch = null;
 
   var mName = versionName(matching);
@@ -125,6 +156,26 @@ var findVersion = function(versions, matching) {
 };
 
 /**
+* Parse the results of the nvm version call.
+*
+* @param {Promise} matching
+*/
+var parseMatching = function(matching) {
+  return String(matching.stdout).trim();
+};
+/**
+* Use nvm to resolve a version string (which could be a version number or an
+alias) to an installed version number (or N/A).
+*
+* @param {String} matching
+*/
+var resolveVersion = function(matching) {
+  return Promise.resolve()
+    .then(function() { return nvmCommand('version "' + matching + '"'); })
+    .then(parseMatching);
+};
+
+/**
  * Get installed version matching a given version.
  *
  * @param {String} matching
@@ -132,9 +183,15 @@ var findVersion = function(versions, matching) {
  */
 var installedVersion = function(matching) {
   return Promise.resolve()
-  .then(function() { return listVersions(); })
-  .then(function(versions) {
-    return findVersion(versions, matching);
+  .then(function() {
+    return Promise.all([
+      resolveVersion(matching),
+      listVersions(),
+    ]);
+  })
+  .spread(function(parsedVersion, versions) {
+    var parsedMatching = parsedVersion !== 'N/A' ? parsedVersion : matching;
+    return findVersion(versions, parsedMatching);
   });
 };
 
@@ -147,9 +204,20 @@ var installedVersion = function(matching) {
 var match = function(version) {
   return Promise.resolve()
   .then(function() { return installedVersion(version); })
-  .then(function(use) {
+  .then(function(useVersion) {
+    return useVersion === 'system' ?
+      getSystemNode()
+        .then(parseMatching)
+        .then(function(use) {
+          return 'system: ' + use;
+        }) :
+      useVersion;
+  })
+  .then(function(useVersion) {
+    var use = (useVersion && useVersion.indexOf('system') === 0) ?
+      'system' : useVersion;
     var command = util.format('nvm use %s > /dev/null;', use);
-    var result = { version: use, command: command };
+    var result = { version: useVersion, command: command };
     return use ? result :
       Promise.reject(new Error('no version matching ' + version));
   });
